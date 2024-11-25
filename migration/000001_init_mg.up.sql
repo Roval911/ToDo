@@ -1,7 +1,8 @@
 -- Create users table
 CREATE TABLE users (
                        id SERIAL PRIMARY KEY,
-                       username VARCHAR(150) NOT NULL UNIQUE,
+                       name VARCHAR(150) NOT NULL UNIQUE,
+                        email VARCHAR(150) NOT NULL UNIQUE,
                        password VARCHAR(255) NOT NULL
 );
 
@@ -11,7 +12,7 @@ CREATE TABLE tasks (
                        title VARCHAR(255) NOT NULL,
                        description TEXT,
                        completed BOOLEAN DEFAULT FALSE,
-                       user_id INTEGER NOT NULL,
-                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                       CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-);
+                      -- userid INTEGER NOT NULL,
+                       createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                   );
+                       --CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE

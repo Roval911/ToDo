@@ -24,11 +24,10 @@ func init() {
 func main() {
 	router := gin.Default()
 
-	router.GET("api/tasks", controllers.GetTasks())
-	router.POST("api/tasks", controllers.CreateTask())
-	router.GET("api/tasks/:id", controllers.GetTaskByID())
-	router.PUT("api/tasks/:id", controllers.UpdateTask())
-	router.DELETE("api/tasks/:id", controllers.DeleteTask())
+	router.POST("api/user", controllers.CreateUserHandler)
+	router.GET("api/user/:id", controllers.GetUserHandler)
+	router.PUT("api/user/:id", controllers.UpdateUserHandler)
+	router.DELETE("api/user/:id", controllers.DeleteUserHandler)
 
 	router.Run(":8080")
 }
