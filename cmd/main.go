@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"log"
+	"os"
 )
 
 func init() {
@@ -29,5 +30,11 @@ func main() {
 	router.PUT("api/user/:id", controllers.UpdateUserHandler)
 	router.DELETE("api/user/:id", controllers.DeleteUserHandler)
 
-	router.Run(":8080")
+	router.POST("api/task", controllers.CreaateTaskHandler)
+	router.GET("api/task/:id", controllers.GetTaskHandler)
+	router.GET("api/tasks", controllers.GetAllTasksHandler)
+	router.PUT("api/task/:id", controllers.UpdateTaskHandler)
+	router.DELETE("api/task/:id", controllers.DeleteTaskHandler)
+
+	router.Run(os.Getenv("PORT"))
 }
