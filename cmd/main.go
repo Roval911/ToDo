@@ -49,6 +49,8 @@ func main() {
 	router.GET("api/user/:id", controllers.GetUserHandler)
 	router.PUT("api/user/:id", controllers.UpdateUserHandler)
 	router.DELETE("api/user/:id", controllers.DeleteUserHandler)
+	router.POST("api/login", controllers.LoginHandler)
+	router.POST("api/logout", controllers.LogoutHandler)
 
 	router.POST("api/task", controllers.CreaateTaskHandler)
 	router.GET("api/task/:id", controllers.GetTaskHandler)

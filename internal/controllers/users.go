@@ -162,3 +162,58 @@ func loginHandler(c *gin.Context) {
 	// Возвращаем токен клиенту
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
+
+// loginHandler авторизует пользователя и возвращает JWT
+// @Summary Авторизация
+// @Description Авторизация пользователя по email и паролю
+// @Tags Авторизация
+// @Param credentials body map[string]string true "Email и пароль"
+// @Success 200 {object} map[string]string "JWT токен"
+// @Failure 400 {object} map[string]string "Неверный запрос"
+// @Failure 401 {object} map[string]string "Неверный email или пароль"
+// @Failure 500 {object} map[string]string "Ошибка сервера"
+// @Router /login [post]
+func LoginHandler(c *gin.Context) {
+	var req struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	// Чтение JSON из тела запроса
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	// Ищем пользователя по email
+	user, err := configs.GetUserByEmail(req.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+	if user == nil || !middleware.CheckPassword(req.Password, user.Password) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		return
+	}
+
+	// Генерируем токен с именем пользователя
+	token, err := middleware.GenerateJWT(user.Name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		return
+	}
+
+	// Возвращаем токен клиенту
+	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
+// logoutHandler удаляет токен из клиента
+// @Summary Выход из системы
+// @Description Удаляет токен и завершает сессию пользователя
+// @Tags Авторизация
+// @Success 200 {object} map[string]string "Успешный выход"
+// @Failure 400 {object} map[string]string "Неверный запрос"
+// @Router /logout [post]
+func LogoutHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "User logged out successfully"})
+}
