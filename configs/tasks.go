@@ -7,12 +7,28 @@ import (
 )
 
 type Task struct {
-	ID          int    `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Completed   bool   `json:"completed"`
-	//Userid      int       `json:"user"`
-	Createdat time.Time `json:"created_at"`
+	ID          int       `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Completed   bool      `json:"completed"`
+	UserID      int       `json:"user"`
+	Createdat   time.Time `json:"created_at"`
+}
+
+func GetTaskByIDAndOwner(taskID, userID int) (*Task, error) {
+	var task Task
+	query := `SELECT id, title, description, user_id, createdat
+			  FROM tasks WHERE id = $1 AND user_id = $2`
+	err := db.QueryRow(query, taskID, userID).Scan(&task.ID, &task.Title, &task.Description, &task.UserID, &task.Createdat)
+	if err == sql.ErrNoRows {
+		log.Printf("Задача не найдена или не принадлежит пользователю: %v", err)
+		return nil, nil
+	} else if err != nil {
+		log.Printf("Ошибка выполнения запроса: %v", err)
+		return nil, err
+	}
+
+	return &task, nil
 }
 
 func CreateTask(task *Task) error {

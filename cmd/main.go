@@ -2,12 +2,30 @@ package main
 
 import (
 	"ToDo/configs"
+	_ "ToDo/docs" // Импорт сгенерированной документации Swagger
 	"ToDo/internal/controllers"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	swaggerFiles "github.com/swaggo/files" // Импортируйте с алиасом для ясности
+	"github.com/swaggo/gin-swagger"
 	"log"
 	"os"
 )
+
+// @title ToDo API
+// @version 1.0
+// @description API для управления пользователями и задачами
+// @termsOfService http://example.com/terms/
+
+// @contact.name API Support
+// @contact.url http://example.com/contact
+// @contact.email support@example.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /api
 
 func init() {
 	// Загружаем переменные окружения из .env файла
@@ -24,6 +42,8 @@ func init() {
 
 func main() {
 	router := gin.Default()
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	router.POST("api/user", controllers.CreateUserHandler)
 	router.GET("api/user/:id", controllers.GetUserHandler)

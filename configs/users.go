@@ -1,7 +1,9 @@
 package configs
 
 import (
+	"ToDo/internal/middleware"
 	"database/sql"
+	"fmt"
 	"log"
 )
 
@@ -13,13 +15,45 @@ type User struct {
 }
 
 func CreateUser(user *User) error {
+	passwordHash, err := middleware.HashPassword(user.Password)
+	if err != nil {
+		log.Printf("Ошибка при хэшировании пароля: %v", err)
+		return fmt.Errorf("could not hash password: %w", err)
+	}
+
 	query := `INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id`
-	err := db.QueryRow(query, user.Name, user.Email).Scan(&user.ID)
+	err = db.QueryRow(query, user.Name, user.Email, passwordHash).Scan(&user.ID)
 	if err != nil {
 		log.Printf("Ошибка при добавлении пользователя: %v", err)
 		return err
 	}
 	return nil
+}
+
+func GetUserByName(name string) (*User, error) {
+	user := &User{}
+	query := `SELECT id, name, email, password FROM users WHERE name = $1`
+	err := db.QueryRow(query, name).Scan(&user.ID, &user.Name, &user.Email, &user.Password)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
+		log.Printf("Ошибка при получении пользователя: %v", err)
+		return nil, err
+	}
+	return user, nil
+}
+
+func GetUserByEmail(email string) (*User, error) {
+	user := &User{}
+	query := `SELECT id, name, email, password FROM users WHERE email = $1`
+	err := db.QueryRow(query, email).Scan(&user.ID, &user.Name, &user.Email, &user.Password)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
+		log.Printf("Ошибка при получении пользователя: %v", err)
+		return nil, err
+	}
+	return user, err
 }
 
 func GetUserByID(id int) (*User, error) {
