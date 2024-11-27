@@ -45,7 +45,7 @@ func main() {
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	router.POST("api/user", controllers.CreateUserHandler)
+	router.POST("api/users", controllers.CreateUserHandler)
 	router.GET("api/user/:id", controllers.GetUserHandler)
 	router.PUT("api/user/:id", controllers.UpdateUserHandler)
 	router.DELETE("api/user/:id", controllers.DeleteUserHandler)
