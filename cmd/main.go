@@ -4,6 +4,7 @@ import (
 	"ToDo/configs"
 	_ "ToDo/docs" // Импорт сгенерированной документации Swagger
 	"ToDo/internal/controllers"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files" // Импортируйте с алиасом для ясности
@@ -42,21 +43,22 @@ func init() {
 
 func main() {
 	router := gin.Default()
+	router.Use(cors.Default())
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	router.POST("api/user", controllers.CreateUserHandler)
-	router.GET("api/user/:id", controllers.GetUserHandler)
-	router.PUT("api/user/:id", controllers.UpdateUserHandler)
-	router.DELETE("api/user/:id", controllers.DeleteUserHandler)
+	router.POST("api/users", controllers.CreateUserHandler)
+	router.GET("api/users/:id", controllers.GetUserHandler)
+	router.PUT("api/users/:id", controllers.UpdateUserHandler)
+	router.DELETE("api/users/:id", controllers.DeleteUserHandler)
 	router.POST("api/login", controllers.LoginHandler)
 	router.POST("api/logout", controllers.LogoutHandler)
 
 	router.POST("api/task", controllers.CreaateTaskHandler)
-	router.GET("api/task/:id", controllers.GetTaskHandler)
+	router.GET("api/tasks/:id", controllers.GetTaskHandler)
 	router.GET("api/tasks", controllers.GetAllTasksHandler)
-	router.PUT("api/task/:id", controllers.UpdateTaskHandler)
-	router.DELETE("api/task/:id", controllers.DeleteTaskHandler)
+	router.PUT("api/tasks/:id", controllers.UpdateTaskHandler)
+	router.DELETE("api/tasks/:id", controllers.DeleteTaskHandler)
 
 	router.Run(os.Getenv("PORT"))
 }

@@ -136,6 +136,8 @@ func UpdateTaskHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось обновить задачу"})
 		return
 	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Задача успешно обновлена"})
 }
 
 // DeleteTaskHandler удаляет задачу

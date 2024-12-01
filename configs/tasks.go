@@ -12,14 +12,14 @@ type Task struct {
 	Description string    `json:"description"`
 	Completed   bool      `json:"completed"`
 	UserID      int       `json:"user"`
-	Createdat   time.Time `json:"created_at"`
+	Createdat   time.Time `json:"createdat"`
 }
 
 func GetTaskByIDAndOwner(taskID, userID int) (*Task, error) {
 	var task Task
 	query := `SELECT id, title, description, user_id, createdat
 			  FROM tasks WHERE id = $1 AND user_id = $2`
-	err := db.QueryRow(query, taskID, userID).Scan(&task.ID, &task.Title, &task.Description, &task.UserID, &task.Createdat)
+	err := db.QueryRow(query, taskID, userID).Scan(&task.ID, &task.Title, &task.Description, &task.UserID, &task.Createdat, &task.Completed)
 	if err == sql.ErrNoRows {
 		log.Printf("Задача не найдена или не принадлежит пользователю: %v", err)
 		return nil, nil
@@ -32,7 +32,7 @@ func GetTaskByIDAndOwner(taskID, userID int) (*Task, error) {
 }
 
 func CreateTask(task *Task) error {
-	query := `INSERT INTO tasks (title, description) VALUES ($1, $2, ) RETURNING id`
+	query := `INSERT INTO tasks (title, description) VALUES ($1, $2 ) RETURNING id`
 	err := db.QueryRow(query, task.Title, task.Description).Scan(&task.ID, &task.Title, &task.Description)
 	if err != nil {
 		log.Printf("Ошибка при добавлении задачи: %v", err)
@@ -42,7 +42,7 @@ func CreateTask(task *Task) error {
 }
 
 func GetAllTasks() ([]Task, error) {
-	query := `SELECT * FROM tasks`
+	query := `SELECT id, title, description, completed, createdat FROM tasks`
 	rows, err := db.Query(query)
 	if err != nil {
 		log.Printf("Ошибка при выполнении запроса: %v", err)
@@ -55,6 +55,7 @@ func GetAllTasks() ([]Task, error) {
 	for rows.Next() {
 		var task Task
 
+		// Порядок должен соответствовать структуре таблицы
 		err := rows.Scan(&task.ID, &task.Title, &task.Description, &task.Completed, &task.Createdat)
 		if err != nil {
 			log.Printf("Ошибка чтения строки: %v", err)
@@ -67,20 +68,24 @@ func GetAllTasks() ([]Task, error) {
 }
 
 func GetTaskByID(id int) (*Task, error) {
-	query := `SELECT * FROM tasks WHERE id = $1`
+	query := `SELECT id, title, description FROM tasks WHERE id = $1`
 	task := &Task{}
 	err := db.QueryRow(query, id).Scan(&task.ID, &task.Title, &task.Description)
+
 	if err == sql.ErrNoRows {
+		log.Printf("Задача с ID %d не найдена", id) // Логируем отсутствие задачи
 		return nil, nil
 	} else if err != nil {
-		log.Printf("Ошибка при получении пользователя: %v", err)
+		log.Printf("Ошибка при получении задачи: %v", err)
 		return nil, err
 	}
+
+	log.Printf("Найдена задача: %+v", task) // Логируем найденную задачу
 	return task, nil
 }
 
 func UpdateTask(task *Task) error {
-	query := `UPDATE tasks SET title = $1, descriptio= $2, WHERE id = $2`
+	query := `UPDATE tasks SET title = $1, description = $2 WHERE id = $3`
 	_, err := db.Exec(query, task.Title, task.Description, task.ID)
 	if err != nil {
 		log.Printf("Ошибка при обновлении задачи: %v", err)
