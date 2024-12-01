@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 // CreateUserHandler создает нового пользователя
@@ -164,7 +163,7 @@ func loginHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
-// LoginHandler авторизует пользователя и возвращает JWT токен
+// loginHandler авторизует пользователя и возвращает JWT
 // @Summary Авторизация
 // @Description Авторизация пользователя по email и паролю
 // @Tags Авторизация
@@ -175,62 +174,46 @@ func loginHandler(c *gin.Context) {
 // @Failure 500 {object} map[string]string "Ошибка сервера"
 // @Router /login [post]
 func LoginHandler(c *gin.Context) {
-	var credentials struct {
+	var req struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
-	if err := c.BindJSON(&credentials); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный формат данных"})
+	// Чтение JSON из тела запроса
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
 	// Ищем пользователя по email
-	user, err := configs.GetUserByEmail(credentials.Email)
+	user, err := configs.GetUserByEmail(req.Email)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка базы данных"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
-	if user == nil || !middleware.CheckPassword(credentials.Password, user.Password) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Неверный email или пароль"})
+	if user == nil || !middleware.CheckPassword(req.Password, user.Password) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
-	// Генерация JWT токена
+	// Генерируем токен с именем пользователя
 	token, err := middleware.GenerateJWT(user.Name)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка генерации токена"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 		return
 	}
 
+	// Возвращаем токен клиенту
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
-// LogoutHandler завершает сессию пользователя (опционально, для демонстрации)
-// @Summary Выход
-// @Description Завершает пользовательскую сессию
+// logoutHandler удаляет токен из клиента
+// @Summary Выход из системы
+// @Description Удаляет токен и завершает сессию пользователя
 // @Tags Авторизация
-// @Success 200 {object} map[string]string "Вы успешно вышли"
+// @Success 200 {object} map[string]string "Успешный выход"
+// @Failure 400 {object} map[string]string "Неверный запрос"
 // @Router /logout [post]
 func LogoutHandler(c *gin.Context) {
-	// Извлекаем токен из заголовка Authorization
-	authHeader := c.GetHeader("Authorization")
-	if authHeader == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Необходим токен"})
-		return
-	}
-
-	tokenStr := authHeader[len("Bearer "):] // Убираем префикс "Bearer "
-
-	// Проверяем токен и извлекаем время истечения
-	claims, err := middleware.ValidateJWT(tokenStr)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Неверный токен"})
-		return
-	}
-
-	// Добавляем токен в черный список
-	middleware.RevokeToken(tokenStr, time.Unix(claims.ExpiresAt, 0))
-
-	c.JSON(http.StatusOK, gin.H{"message": "Вы успешно вышли"})
+	c.JSON(http.StatusOK, gin.H{"message": "User logged out successfully"})
 }

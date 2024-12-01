@@ -4,16 +4,10 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"sync"
 	"time"
 )
 
-var jwtKey = []byte("secret_key")
-
-var revokedTokens = struct {
-	sync.RWMutex
-	tokens map[string]time.Time
-}{tokens: make(map[string]time.Time)} // Храни ключ безопасно, используй ENV переменные
+var jwtKey = []byte("secret_key") // Храни ключ безопасно, используй ENV переменные
 
 // Claims структура для токена
 type Claims struct {
@@ -77,29 +71,4 @@ func protectedHandler(c *gin.Context) {
 	// Извлекаем имя пользователя из контекста
 	name := c.MustGet("name").(string)
 	c.JSON(http.StatusOK, gin.H{"message": "Hello, " + name})
-}
-
-func RevokeToken(token string, expTime time.Time) {
-	revokedTokens.Lock()
-	defer revokedTokens.Unlock()
-	revokedTokens.tokens[token] = expTime
-}
-
-// isTokenRevoked проверяет, отозван ли токен
-func isTokenRevoked(token string) bool {
-	revokedTokens.RLock()
-	defer revokedTokens.RUnlock()
-
-	expTime, exists := revokedTokens.tokens[token]
-	if !exists {
-		return false
-	}
-
-	// Если текущее время больше времени истечения, удаляем токен из списка
-	if time.Now().After(expTime) {
-		delete(revokedTokens.tokens, token)
-		return false
-	}
-
-	return true
 }

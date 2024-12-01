@@ -55,7 +55,7 @@ func GetAllTasks() ([]Task, error) {
 	for rows.Next() {
 		var task Task
 
-		err := rows.Scan(&task.ID, &task.UserID, &task.Title, &task.Description, &task.Completed, &task.Createdat)
+		err := rows.Scan(&task.ID, &task.Title, &task.Description, &task.Completed, &task.Createdat)
 		if err != nil {
 			log.Printf("Ошибка чтения строки: %v", err)
 			return nil, err

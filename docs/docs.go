@@ -87,14 +87,23 @@ const docTemplate = `{
         },
         "/logout": {
             "post": {
-                "description": "Завершает пользовательскую сессию",
+                "description": "Удаляет токен и завершает сессию пользователя",
                 "tags": [
                     "Авторизация"
                 ],
-                "summary": "Выход",
+                "summary": "Выход из системы",
                 "responses": {
                     "200": {
-                        "description": "Вы успешно вышли",
+                        "description": "Успешный выход",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {

@@ -18,21 +18,21 @@ import (
 // @Failure 500 {object} map[string]string "Не удалось создать задачу"
 // @Router /tasks [post]
 func CreaateTaskHandler(c *gin.Context) {
-	username, _ := c.Get("name")
+	//username, _ := c.Get("name")
 	// Получаем ID пользователя из базы данных по имени (или email, если нужно)
-	user, err := configs.GetUserByName(username.(string)) // Предполагается, что GetUserByName возвращает пользователя по имени
-	if err != nil || user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Пользователь не найден"})
-		return
-	}
+	//user, err := configs.GetUserByName(username.(string)) // Предполагается, что GetUserByName возвращает пользователя по имени
+	//if err != nil || user == nil {
+	//	c.JSON(http.StatusUnauthorized, gin.H{"error": "Пользователь не найден"})
+	//	return
+	//}
 	var task configs.Task
-	err = c.ShouldBindBodyWithJSON(&task)
+	err := c.ShouldBindBodyWithJSON(&task)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный формат данных"})
 		return
 	}
 
-	task.UserID = user.ID
+	//task.UserID = user.ID
 
 	err = configs.CreateTask(&task)
 	if err != nil {
@@ -104,12 +104,12 @@ func GetAllTasksHandler(c *gin.Context) {
 // @Failure 500 {object} map[string]string "Не удалось обновить задачу"
 // @Router /tasks/{id} [put]
 func UpdateTaskHandler(c *gin.Context) {
-	username, _ := c.Get("name")
-	user, err := configs.GetUserByName(username.(string))
-	if err != nil || user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Пользователь не найден"})
-		return
-	}
+	//username, _ := c.Get("name")
+	//user, err := configs.GetUserByName(username.(string))
+	//if err != nil || user == nil {
+	//	c.JSON(http.StatusUnauthorized, gin.H{"error": "Пользователь не найден"})
+	//	return
+	//}
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный ID"})
@@ -123,13 +123,13 @@ func UpdateTaskHandler(c *gin.Context) {
 		return
 	}
 	task.ID = id
-	task.UserID = user.ID
+	//task.UserID = user.ID
 
-	existingTask, _ := configs.GetTaskByIDAndOwner(id, user.ID)
-	if existingTask == nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Вы не можете обновить эту задачу"})
-		return
-	}
+	//existingTask, _ := configs.GetTaskByIDAndOwner(id, user.ID)
+	//if existingTask == nil {
+	//	c.JSON(http.StatusForbidden, gin.H{"error": "Вы не можете обновить эту задачу"})
+	//	return
+	//}
 
 	err = configs.UpdateTask(&task)
 	if err != nil {
@@ -150,12 +150,12 @@ func UpdateTaskHandler(c *gin.Context) {
 // @Failure 500 {object} map[string]string "Не удалось удалить задачу"
 // @Router /tasks/{id} [delete]
 func DeleteTaskHandler(c *gin.Context) {
-	username, _ := c.Get("name")
-	user, err := configs.GetUserByName(username.(string))
-	if err != nil || user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Пользователь не найден"})
-		return
-	}
+	//username, _ := c.Get("name")
+	//user, err := configs.GetUserByName(username.(string))
+	//if err != nil || user == nil {
+	//	c.JSON(http.StatusUnauthorized, gin.H{"error": "Пользователь не найден"})
+	//	return
+	//}
 
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -163,11 +163,11 @@ func DeleteTaskHandler(c *gin.Context) {
 		return
 	}
 
-	existingTask, _ := configs.GetTaskByIDAndOwner(id, user.ID)
-	if existingTask == nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Вы не можете удалить эту задачу"})
-		return
-	}
+	//existingTask, _ := configs.GetTaskByIDAndOwner(id, user.ID)
+	//if existingTask == nil {
+	//	c.JSON(http.StatusForbidden, gin.H{"error": "Вы не можете удалить эту задачу"})
+	//	return
+	//}
 
 	if err := configs.DeleteTask(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось удалить задачу"})
